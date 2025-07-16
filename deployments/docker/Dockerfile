@@ -3,10 +3,9 @@ ARG IMAGE_USERNAME=library
 ARG IMAGE_NAME=ubuntu
 ARG IMAGE_TAG=latest
 
-ARG IMAGE_URI=${REGISTRY_HOST}/${IMAGE_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
+#ARG IMAGE_URI=${REGISTRY_HOST}/${IMAGE_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}
 
-ARG GIT_URL=https://github.com/yamcs/yamcs
-ARG GIT_BRANCH=master
+ARG IMAGE_URI=docker.io/library/maven:3.9.9-eclipse-temurin-17
 
 ARG BUILD_DIR=/builds
 ARG BASE_DIR=${BUILD_DIR}/yamcs
@@ -45,17 +44,22 @@ ENV BASE_DIR=${BASE_DIR}
 
 RUN apt-get update && \
     apt-get -y install \
-        sudo git curl vim make cmake tmux tree python3 pip iputils-ping dnsutils libgcrypt20-dev && \
+        sudo less git curl vim make cmake tmux tree python3 pip iputils-ping dnsutils libgcrypt20-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+RUN git config --global http.sslVerify false
 
 RUN mkdir -p ${BUILD_DIR}
 
 WORKDIR ${BUILD_DIR}
 
-RUN git clone --recurse-submodules -b ${GIT_BRANCH} -j2 ${GIT_URL}
+RUN git clone --recurse-submodules -b ${GIT_BRANCH} -j4 ${GIT_URL}
 
-WORKDIR ${BASE_DIR}
+# Yamcs specifics
+WORKDIR ${BUILD_DIR}/yamcs
+RUN make
+#mvn -Dmaven.test.skip=true package yamcs:bundle
 
 COPY entrypoint.sh /entrypoint.sh
 

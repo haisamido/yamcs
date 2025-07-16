@@ -1,0 +1,36 @@
+name: yamcs
+
+services:
+  yamcs:
+    image: ${YAMCS_TAG}
+    hostname: yamcs
+    container_name: yamcs
+    command: "/entrypoint.sh"
+    # environment:
+    #   - ${HTTPS_PROXY}
+    #   - ${HTTP_PROXY}
+    #   - ${YAMCS_PORT}
+    #   - ${MAVEN_HTTPS_PROXY}
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:${YAMCS_PORT}/api/health"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 30
+    #   start_period: 30s
+    volumes:
+#      - ../:/yamcs
+      - ./settings.xml:/yamcs/settings.xml
+    ports:
+      - "8090:8090"
+      - "10500:10500/udp"
+      - "10501:10501/udp"
+      - "10502:10502/udp"
+      - "10503:10503/udp"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - yamcs
+
+networks:
+  yamcs:
+    driver: bridge
