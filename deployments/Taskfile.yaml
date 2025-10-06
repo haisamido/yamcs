@@ -1,0 +1,69 @@
+version: "3"
+
+vars:
+  IMAGE_TAG: foobar
+
+dotenv:
+  - ./.env
+
+env:
+  CONTAINERFILE: ./Containerfile
+  CONTAINER_BIN: docker
+  CONTAINER_COMPOSE_BIN: " {{.CONTAINER_BIN}} compose "
+  CONTAINER_DIR: ./docker
+
+  ENVIRO_FILE: ./.env
+
+  DEPLOYMENT_ENVIRO: '{{.DEPLOYMENT_ENVIRO | default ""}}'
+  HTTP_PROXY: '{{.HTTP_PROXY | default ""}}'
+  HTTPS_PROXY: '{{.HTTPS_PROXY | default ""}}'
+  MAVEN_HTTPS_PROXY: '{{.MAVEN_HTTPS_PROXY | default ""}}'
+
+  YAMCS_EXAMPLE: cascading
+  YAMCS_EXTERNAL_PORT: 8091
+
+  GIT_URL: '{{.GIT_URL | default "https://github.com/yamcs/yamcs.git"}}'
+  # GIT_COMMIT: ${GIT_COMMIT}
+
+tasks:
+  default:
+    desc: Shows this help message
+    cmds:
+      - task --list-all
+    silent: true
+
+  env_create:
+    desc: Create .env file for docker compose
+    cmds:
+      - |
+        ${CONTAINER_DIR}/env.sh > ${CONTAINER_DIR}/.env
+
+  yamcs-build:
+    desc: Build yamcs
+    cmds:
+      - |
+        cd {{.CONTAINER_DIR}}/ && \
+          {{.CONTAINER_COMPOSE_BIN}} build --pull yamcs
+
+  yamcs-up:
+    desc: Bring up yamcs
+    deps: 
+      - yamcs-build
+    cmds:
+      - |
+        cd {{.CONTAINER_DIR}}/ && \
+          {{.CONTAINER_COMPOSE_BIN}} \
+            -f ./compose.yaml up -d --remove-orphans yamcs
+  yamcs-down:
+    desc: Bring down nos3
+    cmds:
+      - |
+        cd {{.CONTAINER_DIR}}/ && \
+          {{.CONTAINER_COMPOSE_BIN}} \
+            -f ./compose.yaml down --remove-orphans   
+
+  # print:
+  #   label: 'print-{{.MESSAGE}}'
+  #   cmds:
+  #     - echo "{{.MESSAGE}}"
+    

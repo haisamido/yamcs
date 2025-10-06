@@ -1,0 +1,41 @@
+  services:
+    yamcs:
+      image: yamcs-example-cfdp:latest
+      env_file:
+        - .env
+        
+      build:
+        context: ./
+        dockerfile: Containerfile
+        args:
+          GIT_URL: ${GIT_URL}
+          GIT_COMMIT: ${GIT_COMMIT}
+          YAMCS_EXAMPLE: ${YAMCS_EXAMPLE}
+          YAMCS_EXTERNAL_PORT: ${YAMCS_EXTERNAL_PORT}
+          MAVEN_HTTPS_PROXY: ${MAVEN_HTTPS_PROXY}
+
+      healthcheck:
+        test: ["CMD-SHELL", "curl http://localhost:${YAMCS_EXTERNAL_PORT}/api"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+      attach: true
+      container_name: yamcs-example-${YAMCS_EXAMPLE}
+      hostname: yamcs-example-${YAMCS_EXAMPLE}
+      working_dir: "/opt/yamcs"
+      command: "/entrypoint.sh"
+      volumes:
+        - ${PWD}/entrypoint.sh:/entrypoint.sh
+#        - ${PWD}/yamcs/settings.xml:/home/nos3/.nos3/yamcs/settings.xml
+      ports:
+        - "127.0.0.1:8091:8090"
+      tty: true
+      stdin_open: true
+      privileged: true
+
+      environment:
+        GIT_URL: ${YAMCS_GIT_URL}
+        GIT_COMMIT: ${YAMCS_GIT_COMMIT}
+        YAMCS_EXAMPLE: ${YAMCS_EXAMPLE}
+        YAMCS_EXTERNAL_PORT: ${YAMCS_EXTERNAL_PORT}
